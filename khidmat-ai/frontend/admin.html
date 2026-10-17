@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KhidmatAI Admin Panel</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/admin.css">
+</head>
+<body class="admin-body">
+
+<div id="loginScreen" class="login-overlay">
+  <div class="login-box">
+    <div class="login-brand">
+      <img src="/static/khidmatai-logo.png" alt="KhidmatAI" width="52">
+      <div><b>KhidmatAI</b><small>Admin Panel</small></div>
+    </div>
+    <h2>Administrator Login</h2>
+    <div id="loginError" class="login-error" style="display:none;"></div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
+    </div>
+    <button class="btn-primary btn-full" onclick="adminLogin()">
+      <i class="fa-solid fa-right-to-bracket"></i> Login
+    </button>
+    <div class="login-hint"><i class="fa-solid fa-shield-halved"></i> Secure Admin Access Only</div>
+  </div>
+</div>
+
+<div id="adminDashboard" class="admin-dashboard" style="display:none;">
+  <aside class="admin-sidebar">
+    <div class="admin-brand">
+      <img src="/static/khidmatai-logo.png" alt="KhidmatAI" width="36">
+      <div><b>KhidmatAI</b><small>Admin</small></div>
+    </div>
+    <nav class="admin-nav">
+      <button class="admin-nav-item active" data-panel="overview" onclick="showPanel('overview')">
+        <i class="fa-solid fa-chart-pie"></i> Overview
+      </button>
+      <button class="admin-nav-item" data-panel="analytics" onclick="showPanel('analytics')">
+        <i class="fa-solid fa-chart-line"></i> Analytics
+      </button>
+      <button class="admin-nav-item" data-panel="landing-hero" onclick="showPanel('landing-hero')">
+        <i class="fa-solid fa-photo-film"></i> Landing Hero
+      </button>
+      <button class="admin-nav-item" data-panel="hero" onclick="showPanel('hero')">
+        <i class="fa-solid fa-images"></i> Dashboard Hero
+      </button>
+      <button class="admin-nav-item" data-panel="ticker" onclick="showPanel('ticker')">
+        <i class="fa-solid fa-bullhorn"></i> Ticker &amp; Alerts
+      </button>
+      <button class="admin-nav-item" data-panel="contact" onclick="showPanel('contact')">
+        <i class="fa-solid fa-address-card"></i> Contact Settings
+      </button>
+      <button class="admin-nav-item" data-panel="organizations" onclick="showPanel('organizations')">
+        <i class="fa-solid fa-building"></i> Organizations
+        <span class="badge" id="pendingBadge" style="display:none;">0</span>
+      </button>
+      <button class="admin-nav-item" data-panel="org-posts" onclick="showPanel('org-posts')">
+        <i class="fa-solid fa-rectangle-list"></i> Org Posts
+        <span class="badge" id="postsPendingBadge" style="display:none;">0</span>
+      </button>
+      <button class="admin-nav-item" data-panel="branches" onclick="showPanel('branches')">
+        <i class="fa-solid fa-code-branch"></i> NGO Branches
+        <span class="badge" id="branchesPendingBadge" style="display:none;">0</span>
+      </button>
+      <button class="admin-nav-item" data-panel="claims" onclick="showPanel('claims')">
+        <i class="fa-solid fa-hand-holding-heart"></i> Facility Claims
+        <span class="badge" id="claimsPendingBadge" style="display:none;">0</span>
+      </button>
+      <button class="admin-nav-item" data-panel="programs" onclick="showPanel('programs')">
+        <i class="fa-solid fa-folder-open"></i> Programs
+      </button>
+      <button class="admin-nav-item" data-panel="facilities" onclick="showPanel('facilities')">
+        <i class="fa-solid fa-map-location-dot"></i> Facilities
+      </button>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="/" target="_blank" class="admin-nav-item" style="display:flex;align-items:center;gap:8px;color:inherit;text-decoration:none;">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> View Site
+      </a>
+      <button class="admin-nav-item danger" onclick="adminLogout()">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-header">
+      <button class="admin-menu-toggle" id="adminMenuToggle" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
+      <h1 id="adminPanelTitle">Dashboard Overview</h1>
+      <div class="admin-header-user"><i class="fa-solid fa-user-shield"></i> Administrator</div>
+    </header>
+
+    <div class="admin-panel active" id="panel-overview">
+      <div class="admin-stats-grid">
+        <div class="admin-stat-card"><i class="fa-solid fa-folder-open"></i><div><b id="stat-programs">--</b><span>Welfare Programs</span></div></div>
+        <div class="admin-stat-card"><i class="fa-solid fa-building"></i><div><b id="stat-orgs">0</b><span>Organizations</span></div></div>
+        <div class="admin-stat-card warning"><i class="fa-solid fa-clock"></i><div><b id="stat-pending">0</b><span>Pending Approvals</span></div></div>
+        <div class="admin-stat-card success"><i class="fa-solid fa-images"></i><div><b id="stat-slides">0</b><span>Dashboard Slides</span></div></div>
+      </div>
+      <div class="admin-card">
+        <h3>Quick Actions</h3>
+        <div class="quick-action-grid">
+          <button class="qa-btn" onclick="showPanel('landing-hero')"><i class="fa-solid fa-photo-film"></i> Landing Hero</button>
+          <button class="qa-btn" onclick="showPanel('hero')"><i class="fa-solid fa-plus"></i> Add Hero Slide</button>
+          <button class="qa-btn" onclick="showPanel('organizations')"><i class="fa-solid fa-check"></i> Review Registrations</button>
+          <button class="qa-btn" onclick="showPanel('contact')"><i class="fa-solid fa-pen"></i> Update Contact</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-panel" id="panel-landing-hero">
+      <div class="admin-card">
+        <div class="panel-head">
+          <h3><i class="fa-solid fa-photo-film"></i> Landing Page Hero</h3>
+          <small>Slides rotate in the hero section of the public landing page. Fully independent from the dashboard hero slider — changes here never affect the dashboard. Upload an image or a short video (played muted, autoplaying and looping). If a slide has both, the video is shown.</small>
+        </div>
+        <button class="btn-primary" onclick="openLandingSlideModal()"><i class="fa-solid fa-plus"></i> Add Slide</button>
+      </div>
+      <div class="admin-card" style="margin-top:20px;">
+        <h3>Current Landing Slides</h3>
+        <div id="landingSlidesList" class="slides-list"><p class="empty-hint">Loading slides...</p></div>
+      </div>
+    </div>
+
+    <div class="admin-panel" id="panel-hero">
+      <div class="admin-card">
+        <div class="panel-head">
+          <h3><i class="fa-solid fa-images"></i> Dashboard Hero Slider</h3>
+          <small>Slides rotate automatically in the user dashboard hero only — they never appear on the landing page (manage that separately under Landing Hero). Upload an image or a short video (played muted, autoplaying and looping). If a slide has both, the video is shown.</small>
+        </div>
+        <button class="btn-primary" onclick="openSlideModal()"><i class="fa-solid fa-plus"></i> Add Slide</button>
+      </div>
+      <div class="admin-card" style="margin-top:20px;">
+        <h3>Current Slides</h3>
+        <div id="slidesList" class="slides-list"><p class="empty-hint">Loading slides...</p></div>
+      </div>
+    </div>
+
+    <div class="admin-panel" id="panel-ticker">
+      <div class="admin-card">
+        <div class="panel-head">
+          <h3><i class="fa-solid fa-bullhorn"></i> Live Ticker &amp; Alerts</h3>
+          <small>Active alerts scroll in a bar at the top of the user dashboard. Inactive alerts stay saved but hidden.</small>
+        </div>
+        <div id="alertsList" class="ticker-items-list"><p class="empty-hint">Loading alerts...</p></div>
+        <div class="form-row" style="margin-top:16px;">
+          <div class="form-group" style="flex:1;">
+            <label>New Alert</label>
+            <input type="text" id="newAlertText" placeholder="e.g. New welfare programs available now" onkeydown="if(event.key==='Enter'){event.preventDefault();addAlert();}">
+          </div>
+          <button class="btn-primary" style="align-self:flex-end;" onclick="addAlert()"><i class="fa-solid fa-plus"></i> Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-panel" id="panel-contact">
+      <div class="admin-card">
+        <div class="panel-head">
+          <h3><i class="fa-solid fa-address-card"></i> Contact Information</h3>
+          <small>These values appear on the public Contact page.</small>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label><i class="fa-solid fa-phone"></i> Phone Number</label>
+            <input type="text" id="contactPhone" placeholder="+92-21-111-999-000">
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-headset"></i> 24/7 Helpline</label>
+            <input type="text" id="contactHelpline" placeholder="0800-55555">
+          </div>
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-envelope"></i> Support Email</label>
+          <input type="email" id="contactEmail" placeholder="support@khidmatai.pk">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-location-dot"></i> Office Address</label>
+          <input type="text" id="contactAddress" placeholder="Office address">
+        </div>
+        <button class="btn-success" onclick="saveContactSettings()">
+          <i class="fa-solid fa-floppy-disk"></i> Save Settings
+        </button>
+        <div id="contactSaveMsg" class="save-msg" style="display:none;">Settings saved successfully.</div>
+      </div>
+    </div>
+
+    <div class="admin-panel" id="panel-organizations">
+      <div class="admin-card">
+        <div class="panel-head">
+          <h3><i class="fa-solid fa-building"></i> Organization Registrations</h3>
+          <small>Review registration requests — approve, reject, suspend or reinstate organizations. Suspending instantly blocks the organization's login and dashboard access and hides its published posts from citizens.</small>
+        </div>
+        <div class="org-filter-tabs">
+          <button class="tab-btn active" onclick="filterOrgs('all', this)">All</button>
+          <button class="tab-btn" onclick="filterOrgs('pending', this)">Pending <span id="pendingCount">0</span></button>
+          <button class="tab-btn" onclick="filterOrgs('approved', this)">Approved</button>
+          <button class="tab-btn" onclick="filterOrgs('rejected', this)">Rejected</button>
+          <button class="tab-btn" onclick="filterOrgs('suspended', this)">Suspended</button>
+        </div>
+        <div id="orgsList" class="orgs-list"><p class="empty-hint">Loading registrations...</p></div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS (real SQLite counts) -->
+    <div class="admin-panel" id="panel-analytics">
+      <div class="admin-stats-grid">
+        <div class="admin-stat-card"><i class="fa-solid fa-users"></i><div><b id="an-users">--</b><span>Registered Users</span></div></div>
+        <div class="admin-stat-card"><i class="fa-solid fa-folder-open"></i><div><b id="an-programs">--</b><span>Welfare Programs</span></div></div>
+        <div class="admin-stat-card success"><i class="fa-solid fa-building-circle-check"></i><div><b id="an-verified-orgs">--</b><span>Verified Organizations</span></div></div>
+        <div class="admin-stat-card warning"><i class="fa-solid fa-clock"></i><div><b id="an-pending-orgs">--</b><span>Pending Organizations</span></div></div>
+        <div class="admin-stat-card info"><i class="fa-solid fa-newspaper"></i><div><b id="an-org-posts">--</b><span>Organization Posts</span></div></div>
+        <div class="admin-stat-card info"><i class="fa-solid fa-robot"></i><div><b id="an-ai-queries">--</b><span>AI Assistant Queries</span></div></div>
+        <div class="admin-stat-card success"><i class="fa-solid fa-bullseye"></i><div><b id="an-matches">--</b><span>Program Matches</span></div></div>
+        <div class="admin-stat-card warning"><i class="fa-solid fa-magnifying-glass"></i><div><b id="an-searches">--</b><span>Program Searches</span></div></div>
+      </div>
+      <div class="admin-card">
+        <div class="panel-head">
+          <h3><i class="fa-solid fa-chart-line"></i> Platform Analytics</h3>
+          <small>Live values from the KhidmatAI SQLite database — users, welfare programs, verified &amp; pending organizations, organization posts, AI assistant queries, eligibility matches and program searches. AI queries count every real assistant question (simple greetings are excluded).</small>
+        </div>
+        <button class="btn-primary" onclick="loadAnalytics()"><i class="fa-solid fa-rotate"></i> Refresh Analytics</button>
+      </div>
+    </div>
+
+    <!-- ORGANIZATION POSTS VERIFICATION -->
+    <div class="admin-panel" id="panel-org-posts">
+      <div class="admin-card">
+        <div class="panel-head">
+          <h3><i class="fa-solid fa-rectangle-list"></i> Organization Posts</h3>
+          <small>Every post published by a verified organization appears here for review. Approve to make it live for citizens, reject to hide it. When an organization edits an approved post it automatically returns to pending for re-verification.</small>
+        </div>
+        <div class="org-filter-tabs">
+          <button class="tab-btn active" onclick="filterOrgPosts('all', this)">All</button>
+          <button class="tab-btn" onclick="filterOrgPosts('pending', this)">Pending <span id="orgPostsPendingCount">0</span></button>
+          <button class="tab-btn" onclick="filterOrgPosts('approved', this)">Approved</button>
+          <button class="tab-btn" onclick="filterOrgPosts('rejected', this)">Rejected</button>
+        </div>
+        <div id="adminOrgPostsList" class="orgs-list"><p class="empty-hint">Loading posts...</p></div>
+      </div>
+    </div>
+
+    <!-- PROGRAMS MANAGEMENT -->
+    <div class="admin-panel" id="panel-programs">
+      <div class="admin-card">
+        <div class="panel-head">
+          <h3><i class="fa-solid fa-folder-open"></i> Welfare Programs</h3>
+          <small>Manage all welfare programs, scholarships, and assistance schemes.</small>
+        </div>
+        <div class="programs-toolbar">
+          <input type="text" id="progSearchAdmin" placeholder="Search programs..." oninput="debounceLoadAdminPrograms()">
+          <select id="progCategoryAdmin" onchange="loadAdminPrograms()">
+            <option value="all">All Categories</option>
+            <option value="Education">Education</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Financial Aid">Financial Aid</option>
+            <option value="Food Support">Food Support</option>
+            <option value="Employment">Employment</option>
+            <option value="Disability">Disability</option>
+            <option value="Disaster Relief">Disaster Relief</option>
+          </select>
+          <button class="btn-primary" onclick="openAddProgramModal()"><i class="fa-solid fa-plus"></i> Add Program</button>
+        </div>
+        <div id="adminProgramsList" class="admin-programs-list"><p class="empty-hint">Loading programs...</p></div>
+      </div>
+    </div>
+
+    <!-- FACILITIES MANAGEMENT -->
+    <div class="admin-panel" id="panel-facilities">
+      <div class="admin-card">
+        <div class="panel-head">
+          <h3><i class="fa-solid fa-map-location-dot"></i> Facility Locations</h3>
+          <small>Auto-collect hospitals, welfare centers, and universities from OpenStreetMap.</small>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>City</label>
+            <select id="autoCollectCity">
+              <option value="Karachi">Karachi</option>
+              <option value="Lahore">Lahore</option>
+              <option value="Islamabad">Islamabad</option>
+              <option value="Peshawar">Peshawar</option>
+              <option value="Quetta">Quetta</option>
+              <option value="Hyderabad">Hyderabad</option>
+              <option value="Faisalabad">Faisalabad</option>
+              <option value="Multan">Multan</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Categories</label>
+            <select id="autoCollectCategories" multiple style="height:80px;">
+              <option value="hospital" selected>Hospitals &amp; Clinics</option>
+              <option value="social_facility" selected>Welfare Centers</option>
+              <option value="community_centre" selected>Community Centers</option>
+              <option value="university" selected>Universities</option>
+              <option value="college">Colleges</option>
+              <option value="pharmacy">Pharmacies</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button class="btn-primary" id="autoCollectBtn" onclick="autoCollectFacilities()">
+            <i class="fa-solid fa-satellite-dish"></i> Auto-Collect from OpenStreetMap
+          </button>
+          <button class="btn-primary" onclick="openManualFacilityModal()" style="background:#0284c7;">
+            <i class="fa-solid fa-plus"></i> Add Facility Manually
+          </button>
+        </div>
+        <div id="autoCollectResult" class="mt-4"></div>
+        <hr style="margin:24px 0;border:none;border-top:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <h4 style="margin:0;">Collected Facilities</h4>
+          <input type="text" id="dbFacSearch" placeholder="Filter facilities..." oninput="filterDbFacilities()" style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;width:220px;">
+        </div>
+        <div id="dbFacilitiesList" class="orgs-list"><p class="empty-hint">Click Auto-Collect or load existing facilities.</p></div>
+      </div>
+    </div>
+
+    <!-- PANEL BRANCHES -->
+    <div class="admin-panel" id="panel-branches">
+      <div class="admin-card">
+        <div class="panel-head">
+          <h3><i class="fa-solid fa-code-branch"></i> NGO Branches Review</h3>
+          <small>Review, approve, or reject branch submissions from registered organizations. Only approved branches appear on the interactive public map.</small>
+        </div>
+        <div class="filter-row" style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;">
+          <select id="branchStatusFilter" onchange="loadAdminBranches()" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;">
+            <option value="all">All statuses</option>
+            <option value="pending" selected>Pending approval</option>
+            <option value="approved">Approved &amp; Live</option>
+            <option value="rejected">Rejected</option>
+            <option value="suspended">Suspended</option>
+          </select>
+          <select id="branchCityFilter" onchange="loadAdminBranches()" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;">
+            <option value="all">All cities</option>
+            <option value="Karachi">Karachi</option>
+            <option value="Lahore">Lahore</option>
+            <option value="Islamabad">Islamabad</option>
+            <option value="Peshawar">Peshawar</option>
+            <option value="Quetta">Quetta</option>
+          </select>
+          <button class="btn-outline" onclick="loadAdminBranches()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+      </div>
+      <div class="admin-card" style="margin-top:20px;">
+        <h3>Branch Submissions</h3>
+        <div id="adminBranchesList" class="orgs-list"><p class="empty-hint">Loading branches...</p></div>
+      </div>
+    </div>
+
+    <!-- PANEL CLAIMS -->
+    <div class="admin-panel" id="panel-claims">
+      <div class="admin-card">
+        <div class="panel-head">
+          <h3><i class="fa-solid fa-hand-holding-heart"></i> Facility Ownership Claims</h3>
+          <small>Moderate requests submitted by NGOs to manage existing hospitals, clinics, or welfare centers. Approved claims assign operational contact management to the NGO without creating duplicate facilities.</small>
+        </div>
+        <div class="filter-row" style="display:flex;gap:12px;margin-top:14px;">
+          <select id="claimStatusFilter" onchange="loadAdminClaims()" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;">
+            <option value="all">All claims</option>
+            <option value="pending" selected>Pending review</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <button class="btn-outline" onclick="loadAdminClaims()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+      </div>
+      <div class="admin-card" style="margin-top:20px;">
+        <h3>Submitted Claims</h3>
+        <div id="adminClaimsList" class="orgs-list"><p class="empty-hint">Loading claims...</p></div>
+      </div>
+    </div>
+
+    <!-- ADD/EDIT PROGRAM MODAL -->
+    <div id="programModal" class="admin-modal" style="display:none;">
+      <div class="admin-modal-box">
+        <button class="admin-modal-close" onclick="closeProgramModal()">&times;</button>
+        <h3 id="programModalTitle">Add New Program</h3>
+        <input type="hidden" id="progEditId">
+        <div class="form-row">
+          <div class="form-group"><label>Program ID</label><input type="text" id="progId" placeholder="auto-generated if empty"></div>
+          <div class="form-group"><label>Title *</label><input type="text" id="progTitle" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Category</label>
+            <select id="progCategory">
+              <option>Education</option><option>Healthcare</option><option>Financial Aid</option>
+              <option>Food Support</option><option>Employment</option><option>Disability</option>
+              <option>Disaster Relief</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Type</label><input type="text" id="progType" placeholder="Scholarship, Grant, etc."></div>
+        </div>
+        <div class="form-group"><label>Description</label><textarea id="progDescription" rows="3"></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>Address</label><input type="text" id="progAddress"></div>
+          <div class="form-group"><label>Phone</label><input type="text" id="progPhone"></div>
+        </div>
+        <div class="form-group"><label>Eligibility (comma-separated)</label><input type="text" id="progEligibility" placeholder="Low income, Female, Sindh resident"></div>
+        <div class="form-group"><label>Documents Required (comma-separated)</label><input type="text" id="progDocuments" placeholder="CNIC, Income proof, Application form"></div>
+        <div class="form-group"><label>Locations (comma-separated)</label><input type="text" id="progLocations" placeholder="Karachi, Lahore, All Pakistan"></div>
+        <div class="form-group"><label>Application URL</label><input type="text" id="progApplication" placeholder="https://..."></div>
+        <div class="form-row">
+          <div class="form-group"><label>Source Name</label><input type="text" id="progSourceName" placeholder="Official website"></div>
+          <div class="form-group"><label>Source URL</label><input type="text" id="progSourceUrl" placeholder="https://..."></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-outline" onclick="closeProgramModal()">Cancel</button>
+          <button class="btn-primary" onclick="saveProgram()"><i class="fa-solid fa-floppy-disk"></i> Save Program</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ADD/EDIT HERO SLIDE MODAL -->
+<div id="slideModal" class="admin-modal" style="display:none;">
+  <div class="admin-modal-box">
+    <button class="admin-modal-close" onclick="closeSlideModal()">&times;</button>
+    <h3 id="slideModalTitle">Add Hero Slide</h3>
+    <input type="hidden" id="slideEditId">
+    <div class="form-group"><label>Title *</label><input type="text" id="slideTitle" placeholder="e.g. Ehsaas Emergency Cash"></div>
+    <div class="form-group"><label>Short description</label><textarea id="slideDescription" rows="2" placeholder="One or two lines shown under the title"></textarea></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Image</label>
+        <div class="drop-zone" id="slideImageDrop">
+          <input type="file" id="slideImageFile" accept=".jpg,.jpeg,.png,.webp,.gif" onchange="uploadSlideMedia('image')" style="display:none;">
+          <button class="btn-outline upload-pick-btn" type="button" id="uploadImageBtn" onclick="document.getElementById('slideImageFile').click()"><i class="fa-solid fa-upload"></i> Upload Image</button>
+          <span class="drop-hint"><i class="fa-solid fa-hand-pointer"></i> or drag &amp; drop an image here</span>
+        </div>
+        <input type="text" id="slideImage" placeholder="...or paste an image URL" oninput="renderSlideUploadPreview('image')">
+        <div class="upload-preview drop-zone" id="slideImagePreview"></div>
+      </div>
+      <div class="form-group">
+        <label>Short video (optional — preferred)</label>
+        <div class="drop-zone" id="slideVideoDrop">
+          <input type="file" id="slideVideoFile" accept=".mp4,.webm,.ogg,.mov,.m4v" onchange="uploadSlideMedia('video')" style="display:none;">
+          <button class="btn-outline upload-pick-btn" type="button" id="uploadVideoBtn" onclick="document.getElementById('slideVideoFile').click()"><i class="fa-solid fa-film"></i> Upload Video</button>
+          <span class="drop-hint"><i class="fa-solid fa-hand-pointer"></i> or drag &amp; drop a video here</span>
+        </div>
+        <input type="text" id="slideVideo" placeholder="...or paste a video URL" oninput="renderSlideUploadPreview('video')">
+        <div class="upload-preview drop-zone" id="slideVideoPreview"></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Button text (optional)</label><input type="text" id="slideButtonText" placeholder="e.g. Learn more"></div>
+      <div class="form-group"><label>Button URL (optional)</label><input type="text" id="slideButtonUrl" placeholder="https://... or #programs"></div>
+    </div>
+    <div class="form-group">
+      <label class="check-label"><input type="checkbox" id="slideActive" checked> Active (visible on the dashboard)</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeSlideModal()">Cancel</button>
+      <button class="btn-primary" id="slideSaveBtn" onclick="saveSlide()"><i class="fa-solid fa-floppy-disk"></i> Save Slide</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT LANDING HERO SLIDE MODAL -->
+<div id="landingSlideModal" class="admin-modal" style="display:none;">
+  <div class="admin-modal-box">
+    <button class="admin-modal-close" onclick="closeLandingSlideModal()">&times;</button>
+    <h3 id="landingSlideModalTitle">Add Landing Slide</h3>
+    <input type="hidden" id="landingSlideEditId">
+    <div class="form-group"><label>Title</label><input type="text" id="landingSlideTitle" placeholder="e.g. Helping people find the right support"></div>
+    <div class="form-group"><label>Short description</label><textarea id="landingSlideDescription" rows="2" placeholder="One or two lines shown under the title"></textarea></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Image</label>
+        <div class="drop-zone" id="landingSlideImageDrop">
+          <input type="file" id="landingSlideImageFile" accept=".jpg,.jpeg,.png,.webp,.gif" onchange="uploadLandingSlideMedia('image')" style="display:none;">
+          <button class="btn-outline upload-pick-btn" type="button" id="uploadLandingImageBtn" onclick="document.getElementById('landingSlideImageFile').click()"><i class="fa-solid fa-upload"></i> Upload Image</button>
+          <span class="drop-hint"><i class="fa-solid fa-hand-pointer"></i> or drag &amp; drop an image here</span>
+        </div>
+        <input type="text" id="landingSlideImage" placeholder="...or paste an image URL" oninput="renderLandingUploadPreview('image')">
+        <div class="upload-preview drop-zone" id="landingSlideImagePreview"></div>
+      </div>
+      <div class="form-group">
+        <label>Short video (optional)</label>
+        <div class="drop-zone" id="landingSlideVideoDrop">
+          <input type="file" id="landingSlideVideoFile" accept=".mp4,.webm,.ogg,.mov,.m4v" onchange="uploadLandingSlideMedia('video')" style="display:none;">
+          <button class="btn-outline upload-pick-btn" type="button" id="uploadLandingVideoBtn" onclick="document.getElementById('landingSlideVideoFile').click()"><i class="fa-solid fa-film"></i> Upload Video</button>
+          <span class="drop-hint"><i class="fa-solid fa-hand-pointer"></i> or drag &amp; drop a video here</span>
+        </div>
+        <input type="text" id="landingSlideVideo" placeholder="...or paste a video URL" oninput="renderLandingUploadPreview('video')">
+        <div class="upload-preview drop-zone" id="landingSlideVideoPreview"></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Button text (optional)</label><input type="text" id="landingSlideButtonText" placeholder="e.g. Find support"></div>
+      <div class="form-group"><label>Button URL (optional)</label><input type="text" id="landingSlideButtonUrl" placeholder="/register or https://..."></div>
+    </div>
+    <div class="form-group">
+      <label class="check-label"><input type="checkbox" id="landingSlideActive" checked> Active (visible on the landing page)</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeLandingSlideModal()">Cancel</button>
+      <button class="btn-primary" id="landingSlideSaveBtn" onclick="saveLandingSlide()"><i class="fa-solid fa-floppy-disk"></i> Save Slide</button>
+    </div>
+  </div>
+</div>
+
+<!-- HERO SLIDE PREVIEW MODAL -->
+<div id="slidePreviewModal" class="admin-modal" style="display:none;">
+  <div class="admin-modal-box preview-box">
+    <button class="admin-modal-close" onclick="closeSlidePreview()">&times;</button>
+    <h3>Slide Preview</h3>
+    <div id="slidePreviewStage"></div>
+  </div>
+</div>
+
+<!-- MANUAL FACILITY MODAL -->
+<div id="manualFacilityModal" class="admin-modal" style="display:none;">
+  <div class="admin-modal-box" style="max-width:550px;">
+    <button class="admin-modal-close" onclick="closeManualFacilityModal()">&times;</button>
+    <h3 id="manualFacilityTitle">Add Facility Manually</h3>
+    <input type="hidden" id="facilityEditId">
+    <div class="form-group">
+      <label>Facility Name *</label>
+      <input type="text" id="manualFacName" placeholder="e.g. Al-Khidmat Medical Center">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Category *</label>
+        <select id="manualFacCategory">
+          <option value="hospital">Hospital</option>
+          <option value="clinic">Clinic</option>
+          <option value="welfare_center">Welfare Center</option>
+          <option value="community_centre">Community Center</option>
+          <option value="university">University</option>
+          <option value="college">College</option>
+          <option value="pharmacy">Pharmacy</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>City *</label>
+        <select id="manualFacCity">
+          <option value="Karachi">Karachi</option>
+          <option value="Lahore">Lahore</option>
+          <option value="Islamabad">Islamabad</option>
+          <option value="Rawalpindi">Rawalpindi</option>
+          <option value="Peshawar">Peshawar</option>
+          <option value="Quetta">Quetta</option>
+          <option value="Multan">Multan</option>
+          <option value="Faisalabad">Faisalabad</option>
+          <option value="Hyderabad">Hyderabad</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Street Address</label>
+      <input type="text" id="manualFacAddress" placeholder="e.g. Block 5, Clifton">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Latitude *</label>
+        <input type="number" step="any" id="manualFacLat" placeholder="24.8607">
+      </div>
+      <div class="form-group">
+        <label>Longitude *</label>
+        <input type="number" step="any" id="manualFacLon" placeholder="67.0011">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="text" id="manualFacPhone" placeholder="021-3456789">
+      </div>
+      <div class="form-group">
+        <label>Website</label>
+        <input type="text" id="manualFacWebsite" placeholder="https://...">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Opening Hours</label>
+      <input type="text" id="manualFacHours" placeholder="24/7 or Mon-Sat 08:00-18:00">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeManualFacilityModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveManualFacility()"><i class="fa-solid fa-floppy-disk"></i> Save Facility</button>
+    </div>
+  </div>
+</div>
+
+<!-- BRANCH MODERATION MODAL -->
+<div id="branchModModal" class="admin-modal" style="display:none;">
+  <div class="admin-modal-box" style="max-width:480px;">
+    <button class="admin-modal-close" onclick="closeBranchModModal()">&times;</button>
+    <h3 id="branchModTitle">Moderate Branch</h3>
+    <input type="hidden" id="branchModId">
+    <input type="hidden" id="branchModAction">
+    <p id="branchModSummary" style="font-size:13px;color:var(--text-muted);margin:8px 0 14px;"></p>
+    <div class="form-group">
+      <label>Admin Review Notes / Reason (sent to NGO)</label>
+      <textarea id="branchModNotes" rows="3" placeholder="Provide reason or clarification for the NGO..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeBranchModModal()">Cancel</button>
+      <button class="btn-primary" id="branchModSubmitBtn" onclick="submitBranchModeration()"><i class="fa-solid fa-check"></i> Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLAIM MODERATION MODAL -->
+<div id="claimModModal" class="admin-modal" style="display:none;">
+  <div class="admin-modal-box" style="max-width:480px;">
+    <button class="admin-modal-close" onclick="closeClaimModModal()">&times;</button>
+    <h3 id="claimModTitle">Moderate Facility Claim</h3>
+    <input type="hidden" id="claimModId">
+    <input type="hidden" id="claimModAction">
+    <p id="claimModSummary" style="font-size:13px;color:var(--text-muted);margin:8px 0 14px;"></p>
+    <div class="form-group">
+      <label>Admin Review Notes / Verification Remarks</label>
+      <textarea id="claimModNotes" rows="3" placeholder="Verification notes or reason for rejection..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeClaimModModal()">Cancel</button>
+      <button class="btn-primary" id="claimModSubmitBtn" onclick="submitClaimModeration()"><i class="fa-solid fa-check"></i> Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="admin-toast" style="display:none;"></div>
+<script src="/static/admin.js"></script>
+</body>
+</html>
